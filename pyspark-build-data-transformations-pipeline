@@ -1,15 +1,133 @@
-# Building a Data Transformation Pipeline in PySpark
-
+Building a Data Transformation Pipeline in PySpark
 In this post, I'll walk you through how to create a data transformation pipeline in PySpark, which is a powerful tool for handling large-scale data processing. We'll explore a simple example that filters, categorizes, and aggregates data, and I'll explain each step in detail so you can understand how to apply these techniques to your own projects.
 
-## 1. Setting Up Your PySpark Environment
-
-Before we begin, you need to ensure that your environment is set up to run PySpark. If you haven't installed PySpark yet, you can do so by following the [official installation guide](https://spark.apache.org/docs/latest/api/python/getting_started/index.html).
+1. Setting Up Your PySpark Environment
+Before we begin, you need to ensure that your environment is set up to run PySpark. If you haven't installed PySpark yet, you can do so by following the official installation guide.
 
 Once PySpark is installed, you can start by creating a Spark session. The Spark session is the entry point to any PySpark functionality, and it is required to create DataFrames, which are the core data structures in PySpark.
 
-```python
 from pyspark.sql import SparkSession
 
 # Create a Spark session
 spark = SparkSession.builder.getOrCreate()
+
+
+2. Creating a Sample DataFrame
+For this example, we'll create a simple DataFrame that contains some sales data. This DataFrame will serve as our starting point for the transformations we'll apply.
+
+# Sample data
+df_data = [
+    (1, 'Alice', 45),
+    (2, 'Bob', 120),
+    (3, 'Charlie', 75),
+    (4, 'David', 180),
+    (5, 'Eve', 220)
+]
+
+# Column names for the DataFrame
+df_columns = ["id", "name", "sales"]
+
+# Create DataFrame
+df = spark.createDataFrame(df_data, df_columns)
+
+
+In this snippet, we create a DataFrame df that contains three columns: id, name, and sales. Each row represents a different individual with their respective sales numbers.
+
+3. Filtering Data
+Next, we filter out any records where the sales are less than 50. This step is essential to remove irrelevant data and focus on the data points that matter.
+
+from pyspark.sql.functions import col
+
+# Filter out records where sales are less than 50
+df_filtered = df.filter(col("sales") >= 50)
+
+
+The filter() function allows us to specify a condition using the col() function, which refers to the column we want to filter on. In this case, we keep only the rows where the sales column has a value of 50 or more.
+
+4. Categorizing Data
+Now, let's categorize the sales data into three categories: Low, Medium, and High. This can be useful for analysis, as it allows us to group the data based on the size of the sales.
+
+from pyspark.sql.functions import when
+
+# Create sales_category column
+df_with_category = df_filtered.withColumn(
+    "sales_category",
+    when(col("sales") <= 100, 'Low')
+    .when((col("sales") > 100) & (col("sales") <= 200), 'Medium')
+    .otherwise('High')
+)
+
+
+Here, we use the withColumn() function to add a new column called sales_category. The when() function helps us define the conditions for categorization:
+
+If sales are 100 or less, the category is 'Low'.
+If sales are between 101 and 200, the category is 'Medium'.
+Any sales above 200 are categorized as 'High'.
+5. Aggregating Data
+Finally, we'll group the data by the sales_category and calculate the average sales for each category. This aggregation is often used in reporting to summarize the data.
+
+from pyspark.sql.functions import avg
+
+# Group by sales_category and calculate average sales
+df_grouped = df_with_category.groupBy("sales_category").agg(avg("sales").alias("average_sales"))
+
+
+The groupBy() function groups the data based on the sales_category column, and agg() is used to apply aggregation functions, such as avg() for calculating the average sales. We use alias() to rename the resulting column to average_sales.
+
+6. Displaying the Results
+Finally, let's display the results of our transformation pipeline.
+
+# Show the result
+df_grouped.show()
+
+
+This will output a table showing the average sales for each category.
+
+Full Script
+Here's the complete script, combining all the steps we've covered:
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, when, avg
+
+# Create a Spark session
+spark = SparkSession.builder.getOrCreate()
+
+# Sample data
+df_data = [
+    (1, 'Alice', 45),
+    (2, 'Bob', 120),
+    (3, 'Charlie', 75),
+    (4, 'David', 180),
+    (5, 'Eve', 220)
+]
+
+# Column names for the DataFrame
+df_columns = ["id", "name", "sales"]
+
+# Create DataFrame
+df = spark.createDataFrame(df_data, df_columns)
+
+# Filter out records where sales are less than 50
+df_filtered = df.filter(col("sales") >= 50)
+
+# Create sales_category column
+df_with_category = df_filtered.withColumn(
+    "sales_category",
+    when(col("sales") <= 100, 'Low')
+    .when((col("sales") > 100) & (col("sales") <= 200), 'Medium')
+    .otherwise('High')
+)
+
+# Group by sales_category and calculate average sales
+df_grouped = df_with_category.groupBy("sales_category").agg(avg("sales").alias("average_sales"))
+
+# Show the result
+df_grouped.show()
+
+
+Conclusion
+In this article, we've built a simple data transformation pipeline in PySpark. This pipeline demonstrates how to filter data, create categories based on conditions, and perform aggregations. These are fundamental operations in data processing and are commonly used in real-world data engineering tasks.
+
+You can adapt this code to more complex scenarios, including larger datasets and more intricate transformations. I hope this example helps you in your journey to mastering PySpark and big data processing!
+
+Feel free to add this code to your GitHub repository as part of your data engineering portfolio. It showcases your ability to work with PySpark and demonstrates a solid understanding of data transformation processes.
