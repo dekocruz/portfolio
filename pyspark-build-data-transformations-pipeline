@@ -1,0 +1,15 @@
+# Building a Data Transformation Pipeline in PySpark
+
+In this post, I'll walk you through how to create a data transformation pipeline in PySpark, which is a powerful tool for handling large-scale data processing. We'll explore a simple example that filters, categorizes, and aggregates data, and I'll explain each step in detail so you can understand how to apply these techniques to your own projects.
+
+## 1. Setting Up Your PySpark Environment
+
+Before we begin, you need to ensure that your environment is set up to run PySpark. If you haven't installed PySpark yet, you can do so by following the [official installation guide](https://spark.apache.org/docs/latest/api/python/getting_started/index.html).
+
+Once PySpark is installed, you can start by creating a Spark session. The Spark session is the entry point to any PySpark functionality, and it is required to create DataFrames, which are the core data structures in PySpark.
+
+```python
+from pyspark.sql import SparkSession
+
+# Create a Spark session
+spark = SparkSession.builder.getOrCreate()
